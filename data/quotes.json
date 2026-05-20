@@ -1,0 +1,162 @@
+[
+  {
+    "text": "妈妈~我饿了！",
+    "tags": [
+      "hungry",
+      "daytime"
+    ],
+    "weight": 3
+  },
+  {
+    "text": "美女姐姐！",
+    "tags": [
+      "greet",
+      "anytime"
+    ],
+    "weight": 5
+  },
+  {
+    "text": "看我的动感光波——biu！",
+    "tags": [
+      "play",
+      "anytime"
+    ],
+    "weight": 3
+  },
+  {
+    "text": "我可不是普通的小朋友哦~",
+    "tags": [
+      "proud",
+      "anytime"
+    ],
+    "weight": 2
+  },
+  {
+    "text": "小白！小白！",
+    "tags": [
+      "play",
+      "anytime"
+    ],
+    "weight": 2
+  },
+  {
+    "text": "哦——有美女！",
+    "tags": [
+      "greet",
+      "anytime"
+    ],
+    "weight": 4
+  },
+  {
+    "text": "风间，你在干嘛~",
+    "tags": [
+      "play",
+      "daytime"
+    ],
+    "weight": 2
+  },
+  {
+    "text": "我要吃巧克力棒！",
+    "tags": [
+      "hungry",
+      "anytime"
+    ],
+    "weight": 3
+  },
+  {
+    "text": "好无聊啊~",
+    "tags": [
+      "bored",
+      "anytime"
+    ],
+    "weight": 3
+  },
+  {
+    "text": "哇哈哈哈哈！",
+    "tags": [
+      "play",
+      "anytime"
+    ],
+    "weight": 3
+  },
+  {
+    "text": "早上好！今天也要精神满满！",
+    "tags": [
+      "greet",
+      "morning"
+    ],
+    "weight": 2
+  },
+  {
+    "text": "该吃午饭了吧？",
+    "tags": [
+      "hungry",
+      "noon"
+    ],
+    "weight": 2
+  },
+  {
+    "text": "好困...该睡觉了...",
+    "tags": [
+      "sleepy",
+      "night"
+    ],
+    "weight": 3
+  },
+  {
+    "text": "不嘛不嘛，我不要！",
+    "tags": [
+      "tantrum",
+      "anytime"
+    ],
+    "weight": 2
+  },
+  {
+    "text": "大象~大象~你的鼻子为什么那么长~",
+    "tags": [
+      "play",
+      "anytime"
+    ],
+    "weight": 2
+  },
+  {
+    "text": "我可是幼稚园的老大！",
+    "tags": [
+      "proud",
+      "daytime"
+    ],
+    "weight": 2
+  },
+  {
+    "text": "晚安...zZZ",
+    "tags": [
+      "sleepy",
+      "night"
+    ],
+    "weight": 2
+  },
+  {
+    "text": "妈妈最讨厌了！",
+    "tags": [
+      "tantrum",
+      "anytime"
+    ],
+    "weight": 1
+  },
+  {
+    "text": "动感超人！变身！",
+    "tags": [
+      "play",
+      "anytime"
+    ],
+    "weight": 3
+  },
+  {
+    "text": "今天的点心是什么？",
+    "tags": [
+      "hungry",
+      "daytime"
+    ],
+    "weight": 2
+  }
+]

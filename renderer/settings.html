@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小新桌宠 - 设置</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+    background: #f5f5f5; color: #333; padding: 24px;
+    user-select: none; -webkit-user-select: none;
+  }
+  h2 { font-size: 18px; margin-bottom: 20px; }
+  .section { margin-bottom: 20px; }
+  .section label {
+    display: block; font-size: 13px; color: #666; margin-bottom: 6px;
+  }
+  .section .hint { font-size: 11px; color: #999; margin-top: 2px; }
+  .row { display: flex; align-items: center; gap: 10px; }
+  input[type="range"] { flex: 1; accent-color: #e25555; }
+  .row span { min-width: 40px; font-size: 13px; text-align: right; }
+
+  /* Quote editor */
+  #quote-editor { margin-top: 10px; }
+  #quote-list { list-style: none; max-height: 240px; overflow-y: auto; border: 1px solid #ddd; border-radius: 6px; }
+  #quote-list li {
+    display: flex; align-items: center; padding: 6px 10px; gap: 8px;
+    border-bottom: 1px solid #eee; font-size: 13px; background: #fff;
+  }
+  #quote-list li:last-child { border-bottom: none; }
+  #quote-list li:hover { background: #fafafa; }
+  #quote-list .q-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #quote-list .q-tags { font-size: 10px; color: #999; min-width: 60px; text-align: right; }
+  #quote-list .q-del { cursor: pointer; color: #e25555; font-size: 14px; padding: 2px 6px; }
+  #quote-list .q-del:hover { background: #fee; border-radius: 4px; }
+
+  .add-row { display: flex; gap: 8px; margin-top: 10px; }
+  .add-row input { flex: 1; padding: 6px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; }
+  .add-row input::placeholder { color: #bbb; }
+
+  button {
+    padding: 8px 18px; border: none; border-radius: 6px; font-size: 13px; cursor: pointer;
+    font-family: inherit;
+  }
+  .btn-primary { background: #e25555; color: #fff; }
+  .btn-primary:hover { background: #d14444; }
+  .btn-secondary { background: #e0e0e0; color: #333; }
+  .btn-secondary:hover { background: #d0d0d0; }
+  .btn-small { padding: 4px 10px; font-size: 12px; }
+
+  .actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
+</style>
+</head>
+<body>
+<h2>⚙ 设置</h2>
+
+<div class="section">
+  <label>宠物大小 <span id="scale-val">1x</span></label>
+  <div class="row">
+    <input type="range" id="scale" min="0.4" max="3" step="0.1" value="1">
+  </div>
+  <div class="hint">0.4x ~ 3x</div>
+</div>
+
+<div class="section">
+  <label>移动速度 <span id="speed-val">1x</span></label>
+  <div class="row">
+    <input type="range" id="speed" min="0.3" max="3" step="0.1" value="1">
+  </div>
+  <div class="hint">影响走路和空闲计时</div>
+</div>
+
+<div class="section">
+  <label>气泡显示时长 <span id="bubble-val">5秒</span></label>
+  <div class="row">
+    <input type="range" id="bubble-duration" min="2000" max="15000" step="500" value="5000">
+  </div>
+</div>
+
+<div class="section">
+  <label>窗口透明度 <span id="opacity-val">95%</span></label>
+  <div class="row">
+    <input type="range" id="opacity" min="0.3" max="1" step="0.05" value="0.95">
+  </div>
+</div>
+
+<div class="section">
+  <label>台词库</label>
+  <ul id="quote-list"></ul>
+  <div class="add-row">
+    <input type="text" id="new-quote" placeholder="新台词..." maxlength="60">
+    <input type="text" id="new-tags" placeholder="标签，逗号分隔" maxlength="80" style="max-width:160px;">
+    <button class="btn-primary btn-small" id="add-quote">+ 添加</button>
+  </div>
+  <div class="hint">标签: morning / noon / night / daytime / anytime / hungry / greet / play / proud / bored / sleepy / tantrum</div>
+</div>
+
+<div class="actions">
+  <button class="btn-primary" id="save">保存</button>
+  <button class="btn-secondary" id="cancel">取消</button>
+</div>
+
+<script src="settings.js"></script>
+</body>
+</html>
