@@ -260,10 +260,15 @@ async function handleChatSubmit() {
   const msg = bubbleInput.value.trim();
   if (!msg) return;
 
-  // Show user message
+  // Show user message briefly
   showBubble(msg);
   bubbleInput.classList.add('hidden');
   bubbleText.classList.remove('hidden');
+  isChatting = false;
+
+  // Show thinking indicator
+  await sleep(300);
+  showBubble('...');
 
   // Call AI
   const response = await callAI(msg);
@@ -272,7 +277,10 @@ async function handleChatSubmit() {
   } else {
     showBubble('咦？好像联系不上我了...嘛~');
   }
-  isChatting = false;
+}
+
+function sleep(ms) {
+  return new Promise(r => setTimeout(r, ms));
 }
 
 async function callAI(userMsg) {
@@ -281,13 +289,15 @@ async function callAI(userMsg) {
   if (aiConfig.apiKey) headers['Authorization'] = 'Bearer ' + aiConfig.apiKey;
 
   chatHistory.push({ role: 'user', content: userMsg });
-  // Keep last 10 messages for context
   if (chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
 
   const messages = [
     { role: 'system', content: aiConfig.systemPrompt || defaultSystemPrompt() },
     ...chatHistory
   ];
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
 
   try {
     const resp = await fetch(url, {
@@ -297,8 +307,11 @@ async function callAI(userMsg) {
         model: aiConfig.model || 'deepseek-chat',
         messages,
         temperature: aiConfig.temperature
-      })
+      }),
+      signal: controller.signal
     });
+
+    clearTimeout(timeout);
 
     if (!resp.ok) {
       console.error('AI API error:', resp.status, await resp.text());
@@ -313,7 +326,12 @@ async function callAI(userMsg) {
     }
     return reply;
   } catch (err) {
-    console.error('AI fetch error:', err);
+    clearTimeout(timeout);
+    if (err.name === 'AbortError') {
+      console.error('AI request timed out');
+    } else {
+      console.error('AI fetch error:', err);
+    }
     return null;
   }
 }
@@ -422,8 +440,13 @@ document.addEventListener('mouseup', (e) => {
   if (!isDragging) return;
   isDragging = false;
 
+  // Skip jump if clicking on bubble or input
+  if (e.target === bubble || e.target === bubbleInput || bubble.contains(e.target)) {
+    if (dragMoved) { savePosition(); resetSleepTimer(); }
+    return;
+  }
+
   if (!dragMoved) {
-    // It's a click
     onJump();
     resetSleepTimer();
   } else {
