@@ -125,6 +125,24 @@ html, body {
   border-top: 10px solid #333;
 }
 
+#bubble-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 13px;
+  font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  color: #333;
+  text-align: center;
+  padding: 0;
+}
+
+#bubble-input::placeholder {
+  color: #bbb;
+}
+
+#bubble-input.hidden { display: none; }
+
 #bubble.show {
   animation: bubble-in 0.25s ease-out forwards;
 }

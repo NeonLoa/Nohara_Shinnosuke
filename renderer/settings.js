@@ -3,6 +3,11 @@ const slScale = document.getElementById('scale');
 const slSpeed = document.getElementById('speed');
 const slBubble = document.getElementById('bubble-duration');
 const slOpacity = document.getElementById('opacity');
+const aiBaseUrl = document.getElementById('ai-base-url');
+const aiApiKey = document.getElementById('ai-api-key');
+const aiModel = document.getElementById('ai-model');
+const aiTemperature = document.getElementById('ai-temperature');
+const aiSystemPrompt = document.getElementById('ai-system-prompt');
 const quoteList = document.getElementById('quote-list');
 const newQuote = document.getElementById('new-quote');
 const newTags = document.getElementById('new-tags');
@@ -21,12 +26,22 @@ async function init() {
     scale: s.scale || 1,
     speed: s.speed || 1,
     bubbleDuration: s.bubbleDuration || 5000,
-    opacity: s.opacity != null ? s.opacity : 0.95
+    opacity: s.opacity != null ? s.opacity : 0.95,
+    aiBaseUrl: s.aiBaseUrl || '',
+    aiApiKey: s.aiApiKey || '',
+    aiModel: s.aiModel || '',
+    aiTemperature: s.aiTemperature != null ? s.aiTemperature : 0.8,
+    aiSystemPrompt: s.aiSystemPrompt || ''
   };
   slScale.value = originalSettings.scale;
   slSpeed.value = originalSettings.speed;
   slBubble.value = originalSettings.bubbleDuration;
   slOpacity.value = originalSettings.opacity;
+  aiBaseUrl.value = originalSettings.aiBaseUrl;
+  aiApiKey.value = originalSettings.aiApiKey;
+  aiModel.value = originalSettings.aiModel;
+  aiTemperature.value = originalSettings.aiTemperature;
+  aiSystemPrompt.value = originalSettings.aiSystemPrompt;
 
   quotes = await window.petAPI.getQuotes();
   originalQuotes = JSON.parse(JSON.stringify(quotes));
@@ -44,6 +59,7 @@ function bindSliders() {
   slSpeed.addEventListener('input', updateLabels);
   slBubble.addEventListener('input', updateLabels);
   slOpacity.addEventListener('input', updateLabels);
+  aiTemperature.addEventListener('input', updateLabels);
 }
 
 function updateLabels() {
@@ -51,6 +67,7 @@ function updateLabels() {
   document.getElementById('speed-val').textContent = parseFloat(slSpeed.value).toFixed(1) + 'x';
   document.getElementById('bubble-val').textContent = Math.round(slBubble.value / 1000) + '秒';
   document.getElementById('opacity-val').textContent = Math.round(slOpacity.value * 100) + '%';
+  document.getElementById('ai-temp-val').textContent = parseFloat(aiTemperature.value).toFixed(1);
 }
 
 // ── Quote list ──
@@ -90,27 +107,30 @@ newQuote.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') addQuote();
 });
 
-// ── Save / Cancel ──
-btnSave.addEventListener('click', async () => {
-  const newSettings = {
+// ── Build current settings ──
+function currentSettings() {
+  return {
     scale: parseFloat(slScale.value),
     speed: parseFloat(slSpeed.value),
     bubbleDuration: parseInt(slBubble.value),
-    opacity: parseFloat(slOpacity.value)
+    opacity: parseFloat(slOpacity.value),
+    aiBaseUrl: aiBaseUrl.value.trim(),
+    aiApiKey: aiApiKey.value.trim(),
+    aiModel: aiModel.value.trim(),
+    aiTemperature: parseFloat(aiTemperature.value),
+    aiSystemPrompt: aiSystemPrompt.value.trim()
   };
-  await window.petAPI.saveSettings(newSettings);
+}
+
+// ── Save / Cancel ──
+btnSave.addEventListener('click', async () => {
+  await window.petAPI.saveSettings(currentSettings());
   await window.petAPI.saveQuotes(quotes);
   window.close();
 });
 
 btnCancel.addEventListener('click', async () => {
-  // Restore original settings on cancel
-  if (JSON.stringify(originalSettings) !== JSON.stringify({
-    scale: parseFloat(slScale.value),
-    speed: parseFloat(slSpeed.value),
-    bubbleDuration: parseInt(slBubble.value),
-    opacity: parseFloat(slOpacity.value)
-  })) {
+  if (JSON.stringify(originalSettings) !== JSON.stringify(currentSettings())) {
     await window.petAPI.saveSettings(originalSettings);
   }
   window.close();
