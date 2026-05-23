@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld('petAPI', {
   moveWindow: (x, y) => ipcRenderer.send('move-window', { x, y }),
   resizeWindow: (scale) => ipcRenderer.send('resize-window', { scale }),
   savePosition: (x, y) => ipcRenderer.send('save-position', { x, y }),
+  callAI: (config, messages) => ipcRenderer.invoke('call-ai', config, messages),
   quitApp: () => ipcRenderer.send('quit-app'),
   onSettingsChanged: (cb) => {
     ipcRenderer.on('settings-changed', (_, s) => cb(s));

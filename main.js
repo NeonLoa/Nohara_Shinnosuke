@@ -125,6 +125,57 @@ ipcMain.on('move-window', (_, { x, y }) => {
   if (petWindow) petWindow.setPosition(Math.round(x), Math.round(y));
 });
 ipcMain.on('quit-app', () => app.quit());
+
+// AI API call from main process (no CORS restrictions)
+ipcMain.handle('call-ai', async (_, config, messages) => {
+  const httpModule = config.baseUrl.startsWith('https') ? require('https') : require('http');
+  const url = new URL(config.baseUrl.replace(/\/$/, '') + '/chat/completions');
+
+  const body = JSON.stringify({
+    model: config.model || 'deepseek-chat',
+    messages,
+    temperature: config.temperature || 0.8
+  });
+
+  const headers = {
+    'Content-Type': 'application/json',
+    'Content-Length': Buffer.byteLength(body)
+  };
+  if (config.apiKey) headers['Authorization'] = 'Bearer ' + config.apiKey;
+
+  const options = {
+    hostname: url.hostname,
+    port: url.port || (url.protocol === 'https:' ? 443 : 80),
+    path: url.pathname,
+    method: 'POST',
+    headers,
+    timeout: 15000
+  };
+
+  return new Promise((resolve) => {
+    const req = httpModule.request(options, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try {
+          const json = JSON.parse(data);
+          resolve(json.choices?.[0]?.message?.content?.trim() || null);
+        } catch { resolve(null); }
+      });
+    });
+    req.on('error', (err) => {
+      console.error('AI call error:', err.message);
+      resolve(null);
+    });
+    req.on('timeout', () => {
+      req.destroy();
+      resolve(null);
+    });
+    req.write(body);
+    req.end();
+  });
+});
+
 ipcMain.on('resize-window', (_, { scale }) => {
   if (petWindow) {
     const s = Math.max(0.4, Math.min(3, scale));

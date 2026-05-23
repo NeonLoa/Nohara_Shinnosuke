@@ -284,10 +284,6 @@ function sleep(ms) {
 }
 
 async function callAI(userMsg) {
-  const url = aiConfig.baseUrl.replace(/\/$/, '') + '/chat/completions';
-  const headers = { 'Content-Type': 'application/json' };
-  if (aiConfig.apiKey) headers['Authorization'] = 'Bearer ' + aiConfig.apiKey;
-
   chatHistory.push({ role: 'user', content: userMsg });
   if (chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
 
@@ -296,44 +292,12 @@ async function callAI(userMsg) {
     ...chatHistory
   ];
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15000);
-
-  try {
-    const resp = await fetch(url, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({
-        model: aiConfig.model || 'deepseek-chat',
-        messages,
-        temperature: aiConfig.temperature
-      }),
-      signal: controller.signal
-    });
-
-    clearTimeout(timeout);
-
-    if (!resp.ok) {
-      console.error('AI API error:', resp.status, await resp.text());
-      return null;
-    }
-
-    const data = await resp.json();
-    const reply = data.choices?.[0]?.message?.content?.trim();
-    if (reply) {
-      chatHistory.push({ role: 'assistant', content: reply });
-      if (chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
-    }
-    return reply;
-  } catch (err) {
-    clearTimeout(timeout);
-    if (err.name === 'AbortError') {
-      console.error('AI request timed out');
-    } else {
-      console.error('AI fetch error:', err);
-    }
-    return null;
+  const reply = await window.petAPI.callAI(aiConfig, messages);
+  if (reply) {
+    chatHistory.push({ role: 'assistant', content: reply });
+    if (chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
   }
+  return reply;
 }
 
 function showRandomBubble() {
