@@ -2,6 +2,7 @@
 const petImg = document.getElementById('pet-img');
 const bubble = document.getElementById('bubble');
 const bubbleText = document.getElementById('bubble-text');
+const bubbleInput = document.getElementById('bubble-input');
 const zzzEl = document.getElementById('zzz');
 const ctxMenu = document.getElementById('context-menu');
 const container = document.getElementById('pet-container');
@@ -19,6 +20,11 @@ let specialTimer = null;
 let lastInteraction = Date.now();
 let isFlipped = false;
 
+// ── AI / Chat state ──
+let aiConfig = { baseUrl: '', apiKey: '', model: '', systemPrompt: '', temperature: 0.8 };
+let chatHistory = [];     // recent messages for context
+let isChatting = false;
+
 // ── Drag state ──
 let isDragging = false;
 let dragStartX = 0, dragStartY = 0;
@@ -30,14 +36,29 @@ async function init() {
   settings = await window.petAPI.getSettings();
   quotes = await window.petAPI.getQuotes();
 
+  aiConfig.baseUrl = settings.aiBaseUrl || 'https://api.deepseek.com/v1';
+  aiConfig.apiKey = settings.aiApiKey || '';
+  aiConfig.model = settings.aiModel || 'deepseek-chat';
+  aiConfig.systemPrompt = settings.aiSystemPrompt || defaultSystemPrompt();
+  aiConfig.temperature = settings.aiTemperature != null ? settings.aiTemperature : 0.8;
+
   window.petAPI.onSettingsChanged((s) => {
     settings = s;
+    aiConfig.baseUrl = s.aiBaseUrl || aiConfig.baseUrl;
+    aiConfig.apiKey = s.aiApiKey || '';
+    aiConfig.model = s.aiModel || aiConfig.model;
+    aiConfig.systemPrompt = s.aiSystemPrompt || aiConfig.systemPrompt;
+    aiConfig.temperature = s.aiTemperature != null ? s.aiTemperature : aiConfig.temperature;
   });
   window.petAPI.onQuotesUpdated((q) => { quotes = q; });
 
   setState('IDLE');
   startIdleTimer();
   startSleepTimer();
+}
+
+function defaultSystemPrompt() {
+  return '你是野原新之助（野原しんのすけ），5岁，住在春日部。性格：调皮、好色、爱搭讪美女、讨厌吃青椒、喜欢动感超人。说话风格：可爱元气的关西腔小孩语气，句尾常用"～""！""嘛~"。回复简短（1-2句），用中文夹杂一点点日语词。';
 }
 
 
@@ -188,12 +209,116 @@ function resetSleepTimer() {
 // ── Dialogue Bubble ──
 function showBubble(text) {
   clearTimeout(bubbleTimer);
+  exitChatMode();
+  bubbleText.classList.remove('hidden');
   bubbleText.textContent = text;
   bubble.className = 'show';
 
+  startBubbleTimer();
+}
+
+function startBubbleTimer() {
+  clearTimeout(bubbleTimer);
   bubbleTimer = setTimeout(() => {
     bubble.className = 'hide';
   }, settings.bubbleDuration || 5000);
+}
+
+bubble.addEventListener('mouseenter', () => {
+  if (bubble.classList.contains('show') && !bubble.classList.contains('hide')) {
+    clearTimeout(bubbleTimer);
+  }
+});
+
+bubble.addEventListener('mouseleave', () => {
+  if (bubble.classList.contains('show') && !bubble.classList.contains('hide') && !isChatting) {
+    startBubbleTimer();
+  }
+});
+
+bubble.addEventListener('click', (e) => {
+  if (isChatting) return;
+  if (bubble.classList.contains('show') && !bubble.classList.contains('hide')) {
+    enterChatMode();
+    e.stopPropagation();
+  }
+});
+
+function enterChatMode() {
+  isChatting = true;
+  clearTimeout(bubbleTimer);
+
+  bubbleText.classList.add('hidden');
+  bubbleInput.classList.remove('hidden');
+  bubbleInput.value = '';
+  bubble.className = 'show';
+  bubbleInput.focus();
+}
+
+function exitChatMode() {
+  isChatting = false;
+  bubbleInput.classList.add('hidden');
+  bubbleText.classList.remove('hidden');
+}
+
+bubbleInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    handleChatSubmit();
+  }
+  if (e.key === 'Escape') {
+    exitChatMode();
+    bubble.className = 'hide';
+  }
+  e.stopPropagation();
+});
+
+async function handleChatSubmit() {
+  const msg = bubbleInput.value.trim();
+  if (!msg) return;
+
+  // Show user message briefly
+  showBubble(msg);
+  bubbleInput.classList.add('hidden');
+  bubbleText.classList.remove('hidden');
+  isChatting = false;
+
+  // Show thinking indicator
+  await sleep(300);
+  showBubble('...');
+
+  // Call AI
+  const response = await callAI(msg);
+  if (response) {
+    showBubble(response);
+  } else {
+    showBubble('咦？好像联系不上我了...嘛~');
+  }
+}
+
+function sleep(ms) {
+  return new Promise(r => setTimeout(r, ms));
+}
+
+async function callAI(userMsg) {
+  chatHistory.push({ role: 'user', content: userMsg });
+  if (chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
+
+  const messages = [
+    { role: 'system', content: aiConfig.systemPrompt || defaultSystemPrompt() },
+    ...chatHistory
+  ];
+
+  const result = await window.petAPI.callAI(aiConfig, messages);
+  if (result.reply) {
+    chatHistory.push({ role: 'assistant', content: result.reply });
+    if (chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
+    return result.reply;
+  }
+  if (result.error) {
+    return '唔...' + result.error + '~';
+  }
+  return null;
 }
 
 function showRandomBubble() {
@@ -300,8 +425,13 @@ document.addEventListener('mouseup', (e) => {
   if (!isDragging) return;
   isDragging = false;
 
+  // Skip jump if clicking on bubble or input
+  if (e.target === bubble || e.target === bubbleInput || bubble.contains(e.target)) {
+    if (dragMoved) { savePosition(); resetSleepTimer(); }
+    return;
+  }
+
   if (!dragMoved) {
-    // It's a click
     onJump();
     resetSleepTimer();
   } else {

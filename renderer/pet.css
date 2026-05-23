@@ -85,20 +85,19 @@ html, body {
   background: #fff;
   border: 2px solid #333;
   border-radius: 14px;
-  padding: 6px 14px;
-  max-width: 90%;
+  padding: 8px 16px;
+  max-width: 75%;
   min-width: 40px;
   text-align: center;
   font-size: 13px;
   font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
   color: #333;
-  line-height: 1.4;
+  line-height: 1.5;
   opacity: 0;
   pointer-events: none;
   z-index: 10;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  word-break: break-word;
 }
 
 #bubble::after {
@@ -125,8 +124,28 @@ html, body {
   border-top: 10px solid #333;
 }
 
+#bubble-input {
+  width: 140px;
+  max-width: 70vw;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 13px;
+  font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  color: #333;
+  text-align: center;
+  padding: 0;
+}
+
+#bubble-input::placeholder {
+  color: #bbb;
+}
+
+#bubble-input.hidden { display: none; }
+
 #bubble.show {
   animation: bubble-in 0.25s ease-out forwards;
+  pointer-events: auto;
 }
 
 #bubble.hide {
