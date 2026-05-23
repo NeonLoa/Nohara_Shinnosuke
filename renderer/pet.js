@@ -214,10 +214,27 @@ function showBubble(text) {
   bubbleText.textContent = text;
   bubble.className = 'show';
 
+  startBubbleTimer();
+}
+
+function startBubbleTimer() {
+  clearTimeout(bubbleTimer);
   bubbleTimer = setTimeout(() => {
     bubble.className = 'hide';
   }, settings.bubbleDuration || 5000);
 }
+
+bubble.addEventListener('mouseenter', () => {
+  if (bubble.classList.contains('show') && !bubble.classList.contains('hide')) {
+    clearTimeout(bubbleTimer);
+  }
+});
+
+bubble.addEventListener('mouseleave', () => {
+  if (bubble.classList.contains('show') && !bubble.classList.contains('hide') && !isChatting) {
+    startBubbleTimer();
+  }
+});
 
 bubble.addEventListener('click', (e) => {
   if (isChatting) return;
