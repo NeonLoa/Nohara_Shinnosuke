@@ -145,6 +145,7 @@ html, body {
 
 #bubble.show {
   animation: bubble-in 0.25s ease-out forwards;
+  pointer-events: auto;
 }
 
 #bubble.hide {
