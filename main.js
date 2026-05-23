@@ -157,14 +157,20 @@ ipcMain.handle('call-ai', async (_, config, messages) => {
       let data = '';
       res.on('data', chunk => data += chunk);
       res.on('end', () => {
+        if (res.statusCode !== 200) {
+          resolve({ reply: null, error: 'HTTP ' + res.statusCode + ': ' + data.slice(0, 100) });
+          return;
+        }
         try {
           const json = JSON.parse(data);
           if (json.error) {
             resolve({ reply: null, error: json.error.message || JSON.stringify(json.error) });
+          } else if (!json.choices) {
+            resolve({ reply: null, error: '响应异常: ' + data.slice(0, 100) });
           } else {
             resolve({ reply: json.choices?.[0]?.message?.content?.trim() || null, error: null });
           }
-        } catch { resolve({ reply: null, error: 'Invalid response' }); }
+        } catch { resolve({ reply: null, error: '响应解析失败: ' + data.slice(0, 100) }); }
       });
     });
     req.on('error', (err) => {
