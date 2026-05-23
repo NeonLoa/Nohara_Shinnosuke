@@ -239,8 +239,19 @@ function getTimePeriod() {
 // ── Context Menu ──
 function showContextMenu(x, y) {
   ctxMenu.classList.remove('hidden');
-  ctxMenu.style.left = x + 'px';
-  ctxMenu.style.top = y + 'px';
+  ctxMenu.style.left = '';
+  ctxMenu.style.top = '';
+
+  const menuW = ctxMenu.offsetWidth;
+  const menuH = ctxMenu.offsetHeight;
+  const containerW = container.clientWidth;
+  const containerH = container.clientHeight;
+
+  const left = (x + menuW > containerW) ? containerW - menuW - 4 : x;
+  const top = (y + menuH > containerH) ? containerH - menuH - 4 : y;
+
+  ctxMenu.style.left = Math.max(0, left) + 'px';
+  ctxMenu.style.top = Math.max(0, top) + 'px';
 }
 
 function hideContextMenu() {
