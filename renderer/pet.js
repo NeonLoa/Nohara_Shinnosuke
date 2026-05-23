@@ -309,12 +309,16 @@ async function callAI(userMsg) {
     ...chatHistory
   ];
 
-  const reply = await window.petAPI.callAI(aiConfig, messages);
-  if (reply) {
-    chatHistory.push({ role: 'assistant', content: reply });
+  const result = await window.petAPI.callAI(aiConfig, messages);
+  if (result.reply) {
+    chatHistory.push({ role: 'assistant', content: result.reply });
     if (chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
+    return result.reply;
   }
-  return reply;
+  if (result.error) {
+    return '唔...' + result.error + '~';
+  }
+  return null;
 }
 
 function showRandomBubble() {

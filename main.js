@@ -159,17 +159,22 @@ ipcMain.handle('call-ai', async (_, config, messages) => {
       res.on('end', () => {
         try {
           const json = JSON.parse(data);
-          resolve(json.choices?.[0]?.message?.content?.trim() || null);
-        } catch { resolve(null); }
+          if (json.error) {
+            resolve({ reply: null, error: json.error.message || JSON.stringify(json.error) });
+          } else {
+            resolve({ reply: json.choices?.[0]?.message?.content?.trim() || null, error: null });
+          }
+        } catch { resolve({ reply: null, error: 'Invalid response' }); }
       });
     });
     req.on('error', (err) => {
-      console.error('AI call error:', err.message);
-      resolve(null);
+      resolve({ reply: null, error: err.code === 'ENOTFOUND' ? '无法连接服务器，请检查API地址' :
+        err.code === 'ECONNREFUSED' ? '连接被拒绝' :
+        err.code === 'ETIMEDOUT' ? '连接超时' : err.message });
     });
     req.on('timeout', () => {
       req.destroy();
-      resolve(null);
+      resolve({ reply: null, error: '请求超时（15秒）' });
     });
     req.write(body);
     req.end();
