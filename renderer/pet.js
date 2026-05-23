@@ -1,6 +1,5 @@
 // ── DOM refs ──
-const petCanvas = document.getElementById('pet-canvas');
-const petCtx = petCanvas.getContext('2d');
+const petImg = document.getElementById('pet-img');
 const bubble = document.getElementById('bubble');
 const bubbleText = document.getElementById('bubble-text');
 const zzzEl = document.getElementById('zzz');
@@ -10,7 +9,7 @@ const container = document.getElementById('pet-container');
 // ── State ──
 let settings = { scale: 1, speed: 1, bubbleDuration: 5000, opacity: 0.95 };
 let quotes = [];
-let state = 'IDLE';
+let state = 'IDLE';       // IDLE | WALKING | JUMPING | SLEEPING | SPECIAL
 let idleTimer = null;
 let sleepTimer = null;
 let walkAnimId = null;
@@ -26,49 +25,8 @@ let dragStartX = 0, dragStartY = 0;
 let dragWinStartX = 0, dragWinStartY = 0;
 let dragMoved = false;
 
-// ── Image processing: remove black background ──
-function removeBlackBackground(sourceImg) {
-  const w = sourceImg.width;
-  const h = sourceImg.height;
-  petCanvas.width = w;
-  petCanvas.height = h;
-  petCanvas.style.maxWidth = '85%';
-  petCanvas.style.maxHeight = '80%';
-
-  petCtx.drawImage(sourceImg, 0, 0);
-  const data = petCtx.getImageData(0, 0, w, h);
-  const pixels = data.data;
-
-  for (let i = 0; i < pixels.length; i += 4) {
-    const r = pixels[i];
-    const g = pixels[i + 1];
-    const b = pixels[i + 2];
-
-    // Remove near-black pixels (threshold below 40 on all channels)
-    // Use brightness for edge feathering
-    const brightness = (r + g + b) / 3;
-    if (brightness < 35) {
-      pixels[i + 3] = 0; // fully transparent
-    } else if (brightness < 65) {
-      // Gradual fade at edges
-      pixels[i + 3] = Math.round((brightness - 35) / 30 * 255);
-    }
-  }
-
-  petCtx.putImageData(data, 0, 0);
-}
-
 // ── Init ──
 async function init() {
-  // Load and process image first
-  const img = new Image();
-  img.src = '../assets/野原新之助.png';
-  await new Promise((resolve, reject) => {
-    img.onload = resolve;
-    img.onerror = reject;
-  });
-  removeBlackBackground(img);
-
   settings = await window.petAPI.getSettings();
   quotes = await window.petAPI.getQuotes();
 
@@ -82,17 +40,18 @@ async function init() {
   startSleepTimer();
 }
 
+
 // ── State Machine ──
 function setState(newState) {
   state = newState;
-  petCanvas.className = '';
+  petImg.className = '';
 
   switch (newState) {
     case 'IDLE':
-      petCanvas.classList.add('idle');
+      petImg.classList.add('idle');
       break;
     case 'WALKING':
-      petCanvas.classList.add('walking');
+      petImg.classList.add('walking');
       break;
     case 'SLEEPING':
       zzzEl.classList.remove('hidden');
@@ -106,11 +65,11 @@ async function onJump() {
   cancelWalk();
   clearTimeout(jumpTimer);
   setState('JUMPING');
-  petCanvas.classList.add('jumping');
+  petImg.classList.add('jumping');
   showRandomBubble();
 
   jumpTimer = setTimeout(() => {
-    petCanvas.classList.remove('jumping');
+    petImg.classList.remove('jumping');
     if (state === 'JUMPING') setState('IDLE');
     resetSleepTimer();
   }, 500);
@@ -121,13 +80,13 @@ async function onSpecial() {
   cancelWalk();
   clearTimeout(jumpTimer);
   clearTimeout(specialTimer);
-  petCanvas.classList.remove('jumping');
+  petImg.classList.remove('jumping');
   setState('SPECIAL');
-  petCanvas.classList.add('spinning');
+  petImg.classList.add('spinning');
   showBubble('看我的动感光波——biu！');
 
   specialTimer = setTimeout(() => {
-    petCanvas.classList.remove('spinning');
+    petImg.classList.remove('spinning');
     if (state === 'SPECIAL') setState('IDLE');
     resetSleepTimer();
   }, 800);
@@ -136,7 +95,7 @@ async function onSpecial() {
 // ── Walk ──
 function startIdleTimer() {
   clearTimeout(idleTimer);
-  const delay = 10000 + Math.random() * 30000;
+  const delay = 10000 + Math.random() * 30000; // 10-40s
   idleTimer = setTimeout(() => {
     if (state === 'IDLE') startWalk();
   }, delay / (settings.speed || 1));
@@ -155,7 +114,7 @@ async function startWalk() {
 
   const screenW = window.screen.width;
   const screenH = window.screen.height;
-  const speed = (settings.speed || 1) * 0.8;
+  const speed = (settings.speed || 1) * 0.8; // px per frame
 
   const targetX = 50 + Math.random() * (screenW - 250);
   const targetY = 50 + Math.random() * (screenH - 350);
@@ -169,6 +128,7 @@ async function startWalk() {
   const stepX = dx / totalFrames;
   const stepY = dy / totalFrames;
 
+  // Flip image toward movement direction
   if (stepX > 1) setFlip(false);
   else if (stepX < -1) setFlip(true);
 
@@ -178,6 +138,7 @@ async function startWalk() {
     curX += stepX;
     curY += stepY;
 
+    // Bounce at edges
     if (curX < 0) curX = 0;
     if (curY < 0) curY = 0;
     if (curX > screenW - 200) curX = screenW - 200;
@@ -199,7 +160,7 @@ async function startWalk() {
 function setFlip(flip) {
   if (flip !== isFlipped) {
     isFlipped = flip;
-    petCanvas.style.transform = flip ? 'scaleX(-1)' : 'scaleX(1)';
+    petImg.style.transform = flip ? 'scaleX(-1)' : 'scaleX(1)';
   }
 }
 
@@ -210,7 +171,7 @@ function startSleepTimer() {
     if (state === 'IDLE') {
       setState('SLEEPING');
     }
-  }, 180000);
+  }, 180000); // 3 min
 }
 
 function resetSleepTimer() {
@@ -254,6 +215,7 @@ function showRandomBubble() {
     return;
   }
 
+  // Weighted random
   const totalWeight = candidates.reduce((s, q) => s + (q.weight || 1), 0);
   let r = Math.random() * totalWeight;
   for (const q of candidates) {
@@ -298,7 +260,7 @@ ctxMenu.addEventListener('click', (e) => {
 
 // ── Input Handling ──
 container.addEventListener('mousedown', (e) => {
-  if (e.button !== 0) return;
+  if (e.button !== 0) return; // left click only
   hideContextMenu();
 
   dragStartX = e.screenX;
@@ -328,6 +290,7 @@ document.addEventListener('mouseup', (e) => {
   isDragging = false;
 
   if (!dragMoved) {
+    // It's a click
     onJump();
     resetSleepTimer();
   } else {
@@ -362,7 +325,7 @@ setInterval(() => {
   if (state === 'IDLE' && Math.random() < 0.15) {
     showRandomBubble();
   }
-}, 30000);
+}, 30000); // every 30s, 15% chance
 
 // ── Start ──
 init();

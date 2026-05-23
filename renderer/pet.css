@@ -21,7 +21,7 @@ html, body {
 #pet-container:active { cursor: grabbing; }
 
 /* ── Pet Image ── */
-#pet-canvas {
+#pet-img {
   max-width: 85%;
   max-height: 80%;
   min-width: 0;
@@ -31,7 +31,7 @@ html, body {
   transition: transform 0.15s ease-out;
 }
 
-#pet-canvas.walking {
+#pet-img.walking {
   animation: walk-wobble 0.4s ease-in-out infinite;
 }
 
@@ -42,7 +42,7 @@ html, body {
 }
 
 /* ── IDLE animation ── */
-#pet-canvas.idle {
+#pet-img.idle {
   animation: idle-breathe 3s ease-in-out infinite;
 }
 
@@ -52,7 +52,7 @@ html, body {
 }
 
 /* ── JUMP animation ── */
-#pet-canvas.jumping {
+#pet-img.jumping {
   animation: jump-bounce 0.5s ease-out;
 }
 
@@ -66,7 +66,7 @@ html, body {
 }
 
 /* ── SPECIAL animation (spin) ── */
-#pet-canvas.spinning {
+#pet-img.spinning {
   animation: spin-around 0.8s ease-in-out;
 }
 
