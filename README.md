@@ -1,13 +1,13 @@
 # 野原新之助 桌宠
 
-蜡笔小新桌面宠物 — Electron 透明悬浮窗，陪你工作摸鱼的小新。
+蜡笔小新桌面宠物 — Electron 透明悬浮窗，陪你摸鱼的小新。
 
 ## 功能
 
 - **置顶悬浮** — 透明无边框，始终在最上层，不占任务栏
 - **单击互动** — 跳一下 + 随机台词气泡（时间感知，早上说早安、晚上犯困）
-- **AI 聊天** — 点击气泡输入对话，接入 LLM 让小新用性格回复
-- **双击** — 特殊动画（转圈 + 动感光波）
+- **AI 聊天** — 点击气泡输入对话，小新用性格回复
+- **双击** — 转圈 + 动感光波
 - **拖拽移动** — 自由拖到屏幕任意位置
 - **自动游走** — 每隔一段时间在桌面上散步，碰到边缘反弹
 - **打瞌睡** — 闲置 3 分钟后自动犯困
@@ -18,8 +18,9 @@
 
 ```sh
 npm install
-npm start
 ```
+
+然后双击 `启动小新.bat`。
 
 ## 设置
 
@@ -30,18 +31,21 @@ npm start
 - 气泡显示时长
 - 窗口透明度
 - 台词库编辑
-- **AI 聊天配置** — API 地址、Key、模型、人设 Prompt、温度
+- **AI 聊天配置** — API 地址、Key、模型、System Prompt、温度
 
-### AI 配置示例
+### AI 配置
+
+支持任何 OpenAI 兼容接口，示例：
 
 | 服务 | API 地址 | 模型 |
 |------|---------|------|
 | DeepSeek | `https://api.deepseek.com/v1` | `deepseek-chat` |
-| Ollama 本地 | `http://localhost:11434/v1` | `qwen2.5` 等 |
-| 豆包等 | 各服务商 OpenAI 兼容端点 | 对应模型名 |
+| Ollama 本地 | `http://localhost:11434/v1`（默认端口） | `ollama list` 查看 |
+
+API Key 按各服务商要求填写，Ollama 本地留空即可。
 
 ## 技术栈
 
 - Electron 35
 - Vanilla HTML/CSS/JS
-- OpenAI 兼容 API（DeepSeek / Ollama / 豆包等）
+- OpenAI 兼容 API
