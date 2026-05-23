@@ -16,7 +16,7 @@
     }
   },
   "devDependencies": {
-    "electron": "^35.0.0"
+    "electron": "^35.7.5"
   },
   "dependencies": {
     "electron-store": "^8.2.0"
